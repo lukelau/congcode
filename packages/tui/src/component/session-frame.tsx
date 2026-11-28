@@ -19,7 +19,8 @@ import { useStorage } from "../context/storage"
 import { useDialog } from "../ui/dialog"
 import { Session } from "../routes/session"
 import { Sidebar } from "../routes/session/sidebar"
-import { clampSessionPaneWidth, SESSION_SIDEBAR_WIDTH } from "../ui/layout"
+import { FileTreePane } from "./file-tree-pane"
+import { clampSessionPaneWidth, FILE_TREE_FIT_WIDTH, FILE_TREE_WIDTH, SESSION_SIDEBAR_WIDTH } from "../ui/layout"
 import { createPaneResize } from "../ui/pane-resize"
 import { PaneResizeHandle } from "../ui/pane-resize-handle"
 import { useToast } from "../ui/toast"
@@ -66,8 +67,9 @@ export function SessionFrame(props: { sessionID: string; verticalTabsWidth: numb
     paneResize.onMouseUp(event)
   }
   const [sidebarOpen, setSidebarOpen] = createSignal(false)
+  const [fileTreeOpen, setFileTreeOpen] = createSignal(true)
   const [sessionWidth, setSessionWidth] = createSignal<number>()
-  const [activePane, setActivePane] = createSignal<"session" | "right">("session")
+  const [activePane, setActivePane] = createSignal<"session" | "right" | "tree">("session")
   const [restoreTerminalFocus, setRestoreTerminalFocus] = createSignal(false)
   let focusTerminal: (() => void) | undefined
   let showTerminals: (() => void) | undefined
@@ -107,7 +109,9 @@ export function SessionFrame(props: { sessionID: string; verticalTabsWidth: numb
   const sidebarVisible = createMemo(() => {
     if (data.session.get(props.sessionID)?.parentID) return false
     if (sidebarOpen()) return true
-    return (config.data.session?.sidebar ?? "auto") === "auto" && wide()
+    // Show the right pane by default on wide terminals; narrow layouts keep the
+    // session full-width so the model info panel never crowds it out.
+    return (config.data.session?.sidebar ?? "auto") !== "hide" && wide()
   })
   const rightPane = createMemo(() => {
     if (activePanel()) return "panel"
@@ -115,6 +119,23 @@ export function SessionFrame(props: { sessionID: string; verticalTabsWidth: numb
     if (selectedTerminal()) return "terminal"
     if (sidebarVisible()) return "sidebar"
   })
+  const fileTreeVisible = createMemo(
+    () =>
+      fileTreeOpen() &&
+      !fullscreen() &&
+      !data.session.get(props.sessionID)?.parentID &&
+      dimensions().width - props.verticalTabsWidth >= FILE_TREE_FIT_WIDTH,
+  )
+  const toggleFileTree = () => {
+    batch(() => {
+      const next = !fileTreeVisible()
+      setFileTreeOpen(next)
+      if (!next && activePane() === "tree") {
+        setActivePane("session")
+        prompt.current?.focus()
+      }
+    })
+  }
   const toggleSidebar = () => {
     batch(() => {
       const visible = rightPane() === "sidebar"
@@ -154,7 +175,7 @@ export function SessionFrame(props: { sessionID: string; verticalTabsWidth: numb
     if (fullscreen()) focusRightPane()
   })
   createEffect(() => {
-    if (rightPane() !== "terminal" && rightPane() !== "panel") setActivePane("session")
+    if (rightPane() !== "terminal" && rightPane() !== "panel" && activePane() !== "tree") setActivePane("session")
   })
   createEffect(() => {
     if (!restoreTerminalFocus() || selectedTerminal()) return
@@ -183,6 +204,17 @@ export function SessionFrame(props: { sessionID: string; verticalTabsWidth: numb
   Keymap.createLayer(() => ({
     mode: "global",
     commands: [
+      {
+        id: "session.fileTree.toggle",
+        title: fileTreeVisible() ? "Hide file tree" : "Show file tree",
+        group: "Session",
+        palette: true,
+        bind: "ctrl+w",
+        run: () => {
+          toggleFileTree()
+          dialog.clear()
+        },
+      },
       {
         id: "session.sidebar.toggle",
         title: rightPane() === "sidebar" ? "Hide sidebar" : "Show sidebar",
@@ -269,6 +301,14 @@ export function SessionFrame(props: { sessionID: string; verticalTabsWidth: numb
       onMouseDragEnd={finishPaneResize}
       onMouseUp={finishPaneResize}
     >
+      <Show when={fileTreeVisible()}>
+        <FileTreePane
+          sessionID={props.sessionID}
+          width={FILE_TREE_WIDTH}
+          focused={activePane() === "tree"}
+          onFocus={() => setActivePane("tree")}
+        />
+      </Show>
       <box
         id="session-pane"
         ref={(value: BoxRenderable) => (sessionNode = value)}

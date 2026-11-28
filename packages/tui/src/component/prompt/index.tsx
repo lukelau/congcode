@@ -92,6 +92,10 @@ export type PromptRef = {
   mode: "normal" | "shell"
   setMode(mode: "normal" | "shell"): void
   set(prompt: PromptInfo): void
+  /** Inserts text at the cursor, keeping the rest of the draft and its mention offsets intact. */
+  insert(text: string): boolean
+  /** Appends an `@path` reference to the draft and focuses the prompt; returns false when the prompt is disabled. */
+  insertReference(filePath: string): boolean
   reset(): void
   blur(): void
   focus(): void
@@ -690,6 +694,22 @@ export function Prompt(props: PromptProps) {
       setStore("prompt", prompt)
       restoreExtmarksFromPrompt(prompt)
       input.gotoBufferEnd()
+    },
+    insert(text) {
+      if (disabled()) return false
+      input.insertText(text)
+      setStore("prompt", "text", input.plainText)
+      syncExtmarksWithPromptParts()
+      return true
+    },
+    insertReference(filePath) {
+      if (disabled()) return false
+      const text = store.prompt.text
+      const separator = text.length > 0 && !/\s$/.test(text) ? " " : ""
+      input.insertText(`${separator}@${filePath} `)
+      setStore("prompt", "text", input.plainText)
+      syncExtmarksWithPromptParts()
+      return true
     },
     reset() {
       resetComposer()

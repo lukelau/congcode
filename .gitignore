@@ -41,3 +41,6 @@ legal-drafts-private/
 
 # Built binaries (large artifacts, build locally)
 /bin/
+
+# local git bundle (large)
+*.bundle

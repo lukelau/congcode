@@ -1,4 +1,5 @@
 import { testRender } from "@opentui/solid"
+import type { JSX } from "solid-js"
 import type { AgentInfo, ModelInfo, SessionInfo } from "@opencode/client"
 import path from "node:path"
 import { ConfigProvider } from "../../src/config"
@@ -27,6 +28,8 @@ export async function renderLocal(
     preferences?: Partial<ModelPreference>
     args?: Args
     fetch?: FetchHandler
+    /** Extra UI rendered inside the provider tree, after the probe. */
+    ui?: () => JSX.Element
   } = {},
 ) {
   const temporary = await tmpdir()
@@ -53,7 +56,7 @@ export async function renderLocal(
     data = useData()
     location = useLocation()
     dialog = useDialog()
-    return <box />
+    return <>{input.ui?.()}</>
   }
 
   const setup = await testRender(

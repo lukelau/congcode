@@ -2,8 +2,12 @@ export const SESSION_SIDEBAR_WIDTH = 42
 export const SESSION_TABS_COMPACT_WIDTH = 5
 export const SESSION_TABS_COMPACT_BREAKPOINT = 12
 export const SESSION_SIDEBAR_MAX_WIDTH = 72
+// The file tree is an optional left column; it hides rather than squeeze the transcript below this width.
+export const FILE_TREE_WIDTH = 32
 const SESSION_CONTENT_MIN_WIDTH = 44
 const SESSION_CONTENT_PREFERRED_WIDTH = 64
+// Total columns the frame needs before the file tree column fits beside the transcript.
+export const FILE_TREE_FIT_WIDTH = FILE_TREE_WIDTH + SESSION_CONTENT_MIN_WIDTH
 // Like vertical tabs, a docked panel fits when the session keeps its preferred width beside a minimum-width pane.
 // Narrower, panels take over the screen.
 export const SESSION_PANEL_SPLIT_MIN_WIDTH = SESSION_CONTENT_PREFERRED_WIDTH + SESSION_CONTENT_MIN_WIDTH

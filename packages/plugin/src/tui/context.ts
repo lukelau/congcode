@@ -542,6 +542,10 @@ export interface UI {
       set(variant: string | undefined): boolean
     }
   }
+  readonly prompt: {
+    /** Inserts a `@path` file reference at the prompt cursor. `path` may be relative to the workspace root. */
+    insertFile(path: string): boolean
+  }
   /** Claims a place in the slot tree; see SlotClaim. */
   readonly slot: (claim: SlotClaim) => () => void
 }

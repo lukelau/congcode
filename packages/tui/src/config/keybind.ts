@@ -243,7 +243,7 @@ export const Definitions = {
   "input.select.word.forward": keybind("alt+shift+f,alt+shift+right", "Select word forward in input"),
   "input.select.word.backward": keybind("alt+shift+b,alt+shift+left", "Select word backward in input"),
   "input.delete.word.forward": keybind("alt+d,alt+delete,ctrl+delete", "Delete word forward in input"),
-  "input.delete.word.backward": keybind("ctrl+w,ctrl+backspace,alt+backspace", "Delete word backward in input"),
+  "input.delete.word.backward": keybind("ctrl+backspace,alt+backspace", "Delete word backward in input"),
   "input.select.all": keybind("super+a", "Select all in input"),
   "prompt.history.previous": keybind("up", "Previous history item"),
   "prompt.history.next": keybind("down", "Next history item"),

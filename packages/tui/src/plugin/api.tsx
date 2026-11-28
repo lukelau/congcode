@@ -24,6 +24,7 @@ import type {
   Toast,
 } from "@opencode/plugin/tui/context"
 import type { Placement, PlacementKind } from "./structure"
+import path from "path"
 import { infoStringToFiletype, type MarkdownCodeBlockRenderer } from "@opentui/core"
 import { useRenderer } from "@opentui/solid"
 import { useClient } from "../context/client"
@@ -44,6 +45,7 @@ import { useStorage } from "../context/storage"
 import { useSessionTabs } from "../context/session-tabs"
 import { useOptionalPanel } from "../context/panel"
 import { useLocal } from "../context/local"
+import { usePromptRef } from "../context/prompt"
 import { errorMessage } from "../util/error"
 import { abbreviateHome } from "../util/path-format"
 
@@ -95,6 +97,7 @@ export function usePluginHost() {
     storage: useStorage(),
     sessionTabs: useSessionTabs(),
     panel: useOptionalPanel(),
+    prompt: usePromptRef(),
     local: useLocal(),
   }
 }
@@ -316,6 +319,23 @@ export function createPluginContext(input: {
             host.local.model.variant.set(variant)
             return true
           },
+        },
+      },
+      prompt: {
+        insertFile(filePath) {
+          const ref = host.prompt.current
+          const route = host.route.data
+          if (!ref || route.type !== "session") return false
+          const baseDir = host.paths.cwd
+          const absolute = path.isAbsolute(filePath) ? filePath : path.resolve(baseDir, filePath)
+          const relative = path.relative(baseDir, absolute)
+          const item =
+            relative && !relative.startsWith("..") && !path.isAbsolute(relative)
+              ? relative.split(path.sep).join("/")
+              : absolute.split(path.sep).join("/")
+          if (!ref.insertReference(item)) return false
+          ref.focus()
+          return true
         },
       },
       slot(value: SlotClaim) {

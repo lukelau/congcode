@@ -131,7 +131,9 @@ function RecentSessions() {
   const data = useData()
   const location = useLocation()
 
-  // Most recent root sessions in the current directory, newest first.
+  // Most recent root sessions in the current directory, newest first. Filtered by
+  // directory rather than project so history stays visible even when the project
+  // root was resolved differently for older sessions (e.g. a nested .git).
   const sessions = createMemo(() => {
     const current = location.current
     return data.session
@@ -140,8 +142,7 @@ function RecentSessions() {
         (session) =>
           !session.parentID &&
           session.time.archived === undefined &&
-          (!current ||
-            (session.projectID === current.project.id && session.location.directory === current.directory)),
+          (!current || session.location.directory === current.directory),
       )
       .sort((a, b) => b.time.updated - a.time.updated)
       .slice(0, 5)

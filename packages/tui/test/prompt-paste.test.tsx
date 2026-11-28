@@ -51,7 +51,7 @@ test.each(["whole", "fragment"])("undo submits the restored %s paste chip", asyn
   await setup.waitFor(() => text() === "[Pasted ~4 lines] ")
   if (kind === "fragment") {
     setup.mockInput.pressBackspace() // Remove the space after the chip.
-    setup.mockInput.pressKey("w", { ctrl: true }) // Leave a fragment of the chip.
+    setup.mockInput.pressBackspace({ ctrl: true }) // Leave a fragment of the chip.
   }
   setup.mockInput.pressKey("u", { ctrl: true })
   await setup.waitFor(() => text() === "")
